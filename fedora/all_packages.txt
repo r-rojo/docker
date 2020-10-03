@@ -1,0 +1,21 @@
+# git
+# gcc
+# gcc-c++
+# cmake
+# make
+# libuuid-devel
+# json-c-devel
+tbb-devel
+hwloc-devel
+#boost-devel
+#boost
+autoconf
+automake
+libxml2
+libxml2-devel
+ncurses
+ncurses-devel
+ncurses-libs
+doxygen
+rsync
+libpng12

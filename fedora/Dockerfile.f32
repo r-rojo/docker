@@ -1,0 +1,21 @@
+FROM fedora:32
+RUN dnf install -y python3 python3-pip python3-devel cmake make libuuid-devel json-c-devel gcc clang vim hwloc-devel gdb doxygen python-sphinx fontawesome-fonts fontawesome-fonts-web python3-breathe python3-recommonmark python3-sphinx_rtd_theme fedora-review rpm-build rpmdevtools git tbb-devel
+RUN usermod -G mock root
+RUN echo 'config_opts["use_nspawn"] = False' >> /etc/mock/site-defaults.cfg
+RUN mkdir -p /opt/nvim &&\
+    curl -fLo /opt/nvim/nvim.appimage https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+RUN cd /opt/nvim && chmod a+x ./nvim.appimage && ./nvim.appimage --appimage-extract
+RUN chmod a+rx /opt/nvim/squashfs-root && ln -s /opt/nvim/squashfs-root/usr/bin/nvim /usr/bin/nvim
+RUN python3 -m pip install pynvim
+RUN find /opt/nvim -type d -exec chmod a+rx {} +
+RUN dnf install -y libedit-devel ncurses-devel gettext bzip2-devel zlib-devel
+RUN git clone https://github.com/fish-shell/fish-shell.git -b 3.1.2 /tmp/fish && cd /tmp/fish && cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr && make -j $(nproc) && make install && cd / && rm -rf /tmp/fish
+RUN adduser -s /usr/bin/fish  -d /home/docker docker -G wheel
+RUN echo "docker ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+USER docker
+RUN mkdir -p /home/docker/.config/nvim && curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+COPY init.vim /home/docker/.config/nvim/.
+RUN nvim +'PlugInstall --sync' +qa && mkdir -p ~/.config/nvim/colors && cp ~/.nvim/plugged/gruvbox/colors/* ~/.config/nvim/colors/.
+WORKDIR /home/docker
+RUN echo "hello" > /home/docker/hello.txt
+ENTRYPOINT [ "/usr/bin/fish" ]

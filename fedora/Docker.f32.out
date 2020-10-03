@@ -1,0 +1,11 @@
+FROM fedora:32
+RUN dnf update -y && dnf install -y git cmake make gcc gcc-g++
+RUN dnf install -y libuuid-devel json-c-devel
+RUN dnf install -y python3-devel
+
+RUN adduser -s /bin/bash  -d /home/docker docker -G wheel
+RUN echo "docker ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+USER docker
+WORKDIR /home/docker
+RUN git clone https://github.com/OPAE/opae-libs.git
+RUN cd opae-libs && mkdir build && cd build && cmake .. -DOPAE_PYTHON_VERSION=3.8 -DOPAE_BUILD_TESTS=ON -DOPAE_BUILD_LIBOPAE_PY=ON && make
